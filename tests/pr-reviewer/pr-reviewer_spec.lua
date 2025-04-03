@@ -9,12 +9,12 @@ describe("PR Reviewer", function()
   end)
 
   it("can be set up with custom options", function()
-    plugin.setup({ 
+    plugin.setup({
       model_cmd = "custom-command",
       default_prompt = "custom prompt",
-      gh_cmd = "custom-gh"
+      gh_cmd = "custom-gh",
     })
-    
+
     assert.are.same(plugin.config.model_cmd, "custom-command")
     assert.are.same(plugin.config.default_prompt, "custom prompt")
     assert.are.same(plugin.config.gh_cmd, "custom-gh")
@@ -33,33 +33,33 @@ describe("PR Reviewer", function()
           changedFiles = 1,
           additions = 10,
           deletions = 5,
-          diff = "mock diff content"
+          diff = "mock diff content",
         })
       end,
       format_pr_context = function(pr_data)
         return "Mocked PR context"
-      end
+      end,
     }
-    
+
     -- Temporarily replace the modules with mocks
     local real_github = package.loaded["pr-reviewer.github"]
     local real_ui = package.loaded["pr-reviewer.ui"]
     local real_ai = package.loaded["pr-reviewer.ai"]
-    
+
     package.loaded["pr-reviewer.github"] = github_mock
     package.loaded["pr-reviewer.ui"] = {
       prompt_for_review_options = function(default_prompt, callback)
         callback("Test prompt")
       end,
-      setup = function() end
+      setup = function() end,
     }
     package.loaded["pr-reviewer.ai"] = {
       generate_review = function(context, prompt, callback)
         callback("Mock review content")
       end,
-      setup = function() end
+      setup = function() end,
     }
-    
+
     -- Test the function without errors
     local success, _ = pcall(function()
       plugin.setup()
@@ -70,15 +70,15 @@ describe("PR Reviewer", function()
         changedFiles = 1,
         additions = 10,
         deletions = 5,
-        diff = "mock diff content"
+        diff = "mock diff content",
       })
     end)
-    
+
     -- Restore the real modules
     package.loaded["pr-reviewer.github"] = real_github
     package.loaded["pr-reviewer.ui"] = real_ui
     package.loaded["pr-reviewer.ai"] = real_ai
-    
+
     assert.is_true(success)
   end)
 end)

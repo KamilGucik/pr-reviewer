@@ -18,10 +18,10 @@ end, { nargs = "?" })
 vim.api.nvim_create_user_command("PRReviewSetup", function(args)
   local pr_reviewer = require("pr-reviewer")
   local config_str = args.args
-  
+
   -- Try to evaluate the config string as Lua code
   local success, config = pcall(loadstring, "return " .. config_str)
-  
+
   if success and type(config) == "function" then
     local ok, result = pcall(config)
     if ok and type(result) == "table" then

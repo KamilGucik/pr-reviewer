@@ -11,7 +11,7 @@ local ai = require("pr-reviewer.ai")
 local config = {
   -- Command template for the AI model integration
   model_cmd = 'CodeCompanion query "{context}" "{prompt}"',
-  
+
   -- Default review prompt template
   default_prompt = [[
       Please review this PR and provide feedback on:
@@ -24,7 +24,7 @@ local config = {
 
   -- GitHub CLI command to use
   gh_cmd = "gh",
-  
+
   -- UI options
   ui = {
     -- Whether to use Telescope for PR selection
@@ -46,7 +46,7 @@ M.config = config
 -- Setup function to initialize the plugin with user configuration
 M.setup = function(args)
   M.config = vim.tbl_deep_extend("force", M.config, args or {})
-  
+
   -- Initialize submodules
   github.setup(M.config)
   ui.setup(M.config)
@@ -81,7 +81,7 @@ end
 function M.generate_review(pr_data)
   -- Prepare context for AI review
   local context = github.format_pr_context(pr_data)
-  
+
   -- Ask for custom prompt (optional)
   ui.prompt_for_review_options(M.config.default_prompt, function(prompt)
     if prompt then

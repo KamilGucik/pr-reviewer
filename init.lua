@@ -1,1 +1,1 @@
-return require('pr-reviewer')
+return require("pr-reviewer")
