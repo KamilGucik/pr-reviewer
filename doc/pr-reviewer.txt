@@ -1,0 +1,92 @@
+*pr-reviewer.txt*  AI-assisted GitHub PR reviewer for Neovim
+
+===============================================================================
+CONTENTS                                                     *pr-reviewer-contents*
+
+    1. Introduction ......... |pr-reviewer-introduction|
+    2. Requirements ......... |pr-reviewer-requirements|
+    3. Setup ............... |pr-reviewer-setup|
+    4. Commands ............ |pr-reviewer-commands|
+    5. Configuration ....... |pr-reviewer-configuration|
+
+===============================================================================
+1. INTRODUCTION                                         *pr-reviewer-introduction*
+
+PR Reviewer is a Neovim plugin that helps you review GitHub pull requests with AI
+assistance. It integrates with GitHub CLI and uses AI to provide intelligent
+feedback on code changes.
+
+===============================================================================
+2. REQUIREMENTS                                       *pr-reviewer-requirements*
+
+- Neovim 0.7.0 or higher
+- GitHub CLI (`gh`) installed and authenticated
+- plenary.nvim
+- (Optional) telescope.nvim for enhanced PR selection UI
+
+===============================================================================
+3. SETUP                                                     *pr-reviewer-setup*
+
+Example configuration with lazy.nvim: >
+
+    {
+      'KamilGucik/pr-reviewer',
+      dependencies = {
+        'nvim-lua/plenary.nvim',
+        'nvim-telescope/telescope.nvim',
+      },
+      config = function()
+        require('pr-reviewer').setup({
+          -- your configuration here
+        })
+      end
+    }
+<
+===============================================================================
+4. COMMANDS                                               *pr-reviewer-commands*
+
+:PRReview [pr_number]                                              *:PRReview*
+    Review a PR by number, or select from your assigned PRs if no number is
+    provided.
+
+:PRReviewCheck                                                *:PRReviewCheck*
+    Check if GitHub CLI is authenticated and ready to use.
+
+:PRReviewSetup {config}                                      *:PRReviewSetup*
+    Update configuration at runtime.
+
+===============================================================================
+5. CONFIGURATION                                     *pr-reviewer-configuration*
+
+Default configuration: >
+
+    require('pr-reviewer').setup({
+      -- Command template for the AI model integration
+      model_cmd = 'CodeCompanion query "{context}" "{prompt}"',
+      
+      -- Default review prompt template
+      default_prompt = [[
+          Please review this PR and provide feedback on:
+          1. Code quality and best practices
+          2. Potential bugs or issues
+          3. Performance considerations
+          4. Security concerns
+          5. Suggested improvements
+      ]],
+
+      -- GitHub CLI command to use
+      gh_cmd = "gh",
+      
+      -- UI options
+      ui = {
+        -- Whether to use Telescope for PR selection
+        use_telescope = true,
+        -- Width of the PR selection window (percentage of screen)
+        width = 0.8,
+        -- Height of the PR selection window (percentage of screen)
+        height = 0.6,
+      },
+    })
+<
+===============================================================================
+vim:ft=help:tw=78:ts=8:noet:

@@ -1,14 +1,24 @@
-name: "release"
+name: Release
+
 on:
   push:
     tags:
       - 'v*'
+
 jobs:
-  luarocks-upload:
-    runs-on: ubuntu-22.04
+  release:
+    runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v3
-      - name: LuaRocks Upload
-        uses: nvim-neorocks/luarocks-tag-release@v4
+        with:
+          fetch-depth: 0
+          
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          generate_release_notes: true
+          draft: false
+          prerelease: false
         env:
-          LUAROCKS_API_KEY: ${{ secrets.LUAROCKS_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

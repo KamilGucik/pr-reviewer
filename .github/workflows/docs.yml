@@ -1,25 +1,32 @@
+name: Docs
+
 on:
   push:
-    branches:
-      - main
-name: docs
+    branches: [ main ]
+    paths:
+      - 'doc/**'
 
 jobs:
   docs:
     runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v3
-      - name: panvimdoc
-        uses: kdheepak/panvimdoc@main
+      
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
         with:
-          vimdoc: my-template-docs
-          version: "Neovim >= 0.8.0"
-          demojify: true
-          treesitter: true
-      - name: Push changes
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_message: "auto-generate vimdoc"
-          commit_user_name: "github-actions[bot]"
-          commit_user_email: "github-actions[bot]@users.noreply.github.com"
-          commit_author: "github-actions[bot] <github-actions[bot]@users.noreply.github.com>"
+          neovim: true
+          version: v0.9.0
+          
+      - name: Generate help tags
+        run: |
+          nvim --headless -u NONE -c "helptags doc/" -c "q"
+          
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add doc/tags
+          git commit -m "chore(docs): update help tags" || echo "No changes to commit"
+          git push

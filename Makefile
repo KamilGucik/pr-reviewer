@@ -1,11 +1,12 @@
-TESTS_INIT=tests/minimal_init.lua
-TESTS_DIR=tests/
-
-.PHONY: test
+.PHONY: test lint
 
 test:
-	@nvim \
-		--headless \
-		--noplugin \
-		-u ${TESTS_INIT} \
-		-c "PlenaryBustedDirectory ${TESTS_DIR} { minimal_init = '${TESTS_INIT}' }"
+	nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedFile tests/pr-reviewer/pr-reviewer_spec.lua"
+
+lint:
+	luacheck lua/
+
+doc:
+	nvim --headless -c "helptags doc/" -c q
+
+all: test lint doc
