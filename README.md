@@ -13,7 +13,7 @@ PR Reviewer is a Neovim plugin that helps you review GitHub pull requests with A
 
 ## Requirements
 
-- Neovim 0.7.0+
+- Neovim 0.11.0+
 - GitHub CLI (`gh`) installed and authenticated
 - Plenary.nvim
 - (Optional) Telescope.nvim for enhanced PR selection UI
