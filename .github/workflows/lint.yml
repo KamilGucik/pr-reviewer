@@ -1,0 +1,38 @@
+
+name: Lint
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Neovim
+        uses: rhysd/action-setup-vim@v1
+        with:
+          neovim: true
+          version: v0.9.0
+          
+      - name: Install luarocks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luarocks
+          
+      - name: Install dependencies
+        run: |
+          sudo luarocks install luacheck
+          sudo luarocks install stylua
+          
+      - name: Run Luacheck
+        run: luacheck lua/
+        
+      - name: Run Stylua
+        run: stylua lua/
+      
