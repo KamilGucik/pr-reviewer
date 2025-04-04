@@ -4,18 +4,22 @@ describe("PR Reviewer", function()
   it("can be set up with default options", function()
     plugin.setup()
     assert.are.same(type(plugin.config), "table")
-    assert.are.same(type(plugin.config.model_cmd), "string")
+    assert.are.same(type(plugin.config.model_cmd), "function")
     assert.are.same(type(plugin.config.default_prompt), "string")
   end)
 
   it("can be set up with custom options", function()
+    local custom_cmd_function = function(context, prompt)
+      return "Custom review for " .. context:sub(1, 10) .. "..."
+    end
+    
     plugin.setup({
-      model_cmd = "custom-command",
+      model_cmd = custom_cmd_function,
       default_prompt = "custom prompt",
       gh_cmd = "custom-gh",
     })
 
-    assert.are.same(plugin.config.model_cmd, "custom-command")
+    assert.are.same(plugin.config.model_cmd, custom_cmd_function)
     assert.are.same(plugin.config.default_prompt, "custom prompt")
     assert.are.same(plugin.config.gh_cmd, "custom-gh")
   end)
@@ -61,8 +65,14 @@ describe("PR Reviewer", function()
     }
 
     -- Test the function without errors
-    local success, _ = pcall(function()
-      plugin.setup()
+    local success, err = pcall(function()
+      plugin.setup({
+        -- Override model_cmd with a test function that returns a string
+        model_cmd = function(context, prompt)
+          return "This is a test review"
+        end
+      })
+      
       plugin.generate_review({
         number = "123",
         title = "Test PR",
@@ -73,6 +83,10 @@ describe("PR Reviewer", function()
         diff = "mock diff content",
       })
     end)
+    
+    if not success then
+      print("Error: " .. tostring(err))
+    end
 
     -- Restore the real modules
     package.loaded["pr-reviewer.github"] = real_github

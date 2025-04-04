@@ -53,10 +53,20 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
 require('pr-reviewer').setup({
-  -- Command template for the AI model integration
-  -- {context} will be replaced with PR content
-  -- {prompt} will be replaced with the review prompt
-  model_cmd = 'CodeCompanion query "{context}" "{prompt}"',
+  -- Function that generates a review directly
+  -- Must return a string containing the formatted review
+  model_cmd = function(context, prompt)
+    -- Example implementation using CodeCompanion
+    -- You could replace this with any method that generates a review
+    local review = vim.fn.system({
+      "codecompanion", "review",
+      "--context=" .. vim.fn.shellescape(context),
+      "--prompt=" .. vim.fn.shellescape(prompt)
+    })
+    
+    -- Process and return the review as a string
+    return review
+  end,
   
   -- Default review prompt template
   default_prompt = [[

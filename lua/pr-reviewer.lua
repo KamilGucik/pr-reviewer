@@ -1,99 +1,101 @@
--- main module file
-local github = require("pr-reviewer.github")
-local ui = require("pr-reviewer.ui")
-local ai = require("pr-reviewer.ai")
-
----@class Config
----@field model_cmd string Command template for the AI model integration
----@field default_prompt string Default review prompt template
----@field gh_cmd string GitHub CLI command to use
----@field ui table UI configuration options
-local config = {
-  -- Command template for the AI model integration
-  model_cmd = 'CodeCompanion query "{context}" "{prompt}"',
-
-  -- Default review prompt template
-  default_prompt = [[
-      Please review this PR and provide feedback on:
-      1. Code quality and best practices
-      2. Potential bugs or issues
-      3. Performance considerations
-      4. Security concerns
-      5. Suggested improvements
-  ]],
-
-  -- GitHub CLI command to use
-  gh_cmd = "gh",
-
-  -- UI options
-  ui = {
-    -- Whether to use Telescope for PR selection
-    use_telescope = true,
-    -- Width of the PR selection window (percentage of screen)
-    width = 0.8,
-    -- Height of the PR selection window (percentage of screen)
-    height = 0.6,
-  },
-}
-
----@class PRReviewer
+-- Main PR-Reviewer module
 local M = {}
 
----@type Config
-M.config = config
+-- Default configuration
+M.config = {
+  -- Function that generates a review directly
+  model_cmd = function(context, prompt)
+    -- This is a placeholder implementation that should be replaced
+    -- In a real setup, you might call an AI service, use CodeCompanion, etc.
+    return string.format([[
+# PR Review
 
----@param args Config?
--- Setup function to initialize the plugin with user configuration
-M.setup = function(args)
-  M.config = vim.tbl_deep_extend("force", M.config, args or {})
+## Summary
+This is a generated review based on the provided context and prompt.
 
-  -- Initialize submodules
-  github.setup(M.config)
-  ui.setup(M.config)
-  ai.setup(M.config)
+## Context
+%s
+
+## Prompt
+%s
+
+## Recommendations
+- This is a placeholder review
+- Replace this function with your actual implementation
+- Connect to your preferred AI service or tool
+    ]], context:sub(1, 100) .. "...", prompt)
+  end,
+  default_prompt = "Please review this PR for any bugs, code quality issues, or potential improvements.",
+  gh_cmd = "gh",
+  ui = {
+    width = 0.8,
+    height = 0.8,
+    use_telescope = true,
+  }
+}
+
+-- Setup function
+function M.setup(opts)
+  opts = opts or {}
+  M.config = vim.tbl_deep_extend("force", M.config, opts)
+  
+  -- Setup submodules with the config
+  require("pr-reviewer.github").setup(M.config)
+  require("pr-reviewer.ui").setup(M.config)
+  require("pr-reviewer.ai").setup(M.config)
 end
 
--- Check if GitHub CLI is authenticated and ready
+-- Check if setup is properly configured
 function M.check_setup()
+  local github = require("pr-reviewer.github")
   github.check_auth()
+  
+  vim.notify("PR-Reviewer configuration check complete", vim.log.levels.INFO)
 end
 
--- Main review function
+-- Review a PR by number or select from available PRs
 function M.review_pr(pr_number)
-  if pr_number and pr_number ~= "" then
+  local github = require("pr-reviewer.github")
+  local ui = require("pr-reviewer.ui")
+
+  if pr_number then
+    -- Review specific PR by number
     github.get_pr_details(pr_number, function(pr_data)
       M.generate_review(pr_data)
     end)
   else
-    -- Ask user which PRs they want to see
+    -- Show selection UI for PRs
     ui.prompt_pr_list_type(function(show_all)
       github.list_prs(function(prs)
-        ui.show_pr_selection(prs, function(selected_pr)
-          if selected_pr then
-            github.get_pr_details(selected_pr.number, function(pr_data)
-              M.generate_review(pr_data)
-            end)
-          end
+        ui.show_pr_selection(prs, function(pr)
+          github.get_pr_details(pr.number, function(pr_data)
+            M.generate_review(pr_data)
+          end)
         end)
       end, show_all)
     end)
   end
 end
 
--- Generate PR review using AI
+-- Generate PR review using the AI module
 function M.generate_review(pr_data)
-  -- Prepare context for AI review
-  local context = github.format_pr_context(pr_data)
+  local github = require("pr-reviewer.github")
+  local ui = require("pr-reviewer.ui")
+  local ai = require("pr-reviewer.ai")
 
-  -- Ask for custom prompt (optional)
+  -- Format PR context for AI
+  local context = github.format_pr_context(pr_data)
+  
+  -- Prompt for custom review instructions if needed
   ui.prompt_for_review_options(M.config.default_prompt, function(prompt)
-    if prompt then
-      -- Generate review with AI
-      ai.generate_review(context, prompt, function(review)
-        -- Display review in buffer
-        ui.show_review(pr_data, review)
-      end)
+    if not prompt or prompt == "" then
+      prompt = M.config.default_prompt
     end
+    
+    -- Generate review with AI
+    ai.generate_review(context, prompt, function(review)
+      ui.show_review(pr_data, review)
+    end)
   end)
 end
 

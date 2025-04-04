@@ -11,30 +11,31 @@ end
 
 -- Generate review using AI model
 function M.generate_review(context, prompt, callback)
-  local Job = require("plenary.job")
-
-  local cmd =
-    M.config.model_cmd:gsub("{context}", vim.fn.shellescape(context)):gsub("{prompt}", vim.fn.shellescape(prompt))
-  local cmd_parts = vim.split(cmd, " ")
-  local command = table.remove(cmd_parts, 1)
-
-  -- Run AI review
-  Job:new({
-    command = command,
-    args = cmd_parts,
-    on_stdout = function(_, data)
-      -- Process each line of output
-    end,
-    on_exit = function(j, return_val)
-      if return_val ~= 0 then
-        vim.notify("Failed to get AI review", vim.log.levels.ERROR)
-        return
-      end
-
-      local review = table.concat(j:result(), "\n")
-      callback(review)
-    end,
-  }):start()
+  -- Check if model_cmd is a function
+  if type(M.config.model_cmd) ~= "function" then
+    vim.notify("Invalid model_cmd configuration (must be a function)", vim.log.levels.ERROR)
+    return
+  end
+  
+  -- Run the model_cmd function to get the review directly
+  local ok, result = pcall(function()
+    return M.config.model_cmd(context, prompt)
+  end)
+  
+  -- Handle any errors from the function execution
+  if not ok then
+    vim.notify("Error executing model_cmd function: " .. tostring(result), vim.log.levels.ERROR)
+    return
+  end
+  
+  -- If the function returned nil or non-string result, show an error
+  if result == nil or type(result) ~= "string" then
+    vim.notify("model_cmd function must return a string containing the review", vim.log.levels.ERROR)
+    return
+  end
+  
+  -- Return the review via callback
+  callback(result)
 end
 
 return M
