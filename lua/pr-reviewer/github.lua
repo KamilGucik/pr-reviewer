@@ -30,13 +30,19 @@ function M.check_auth()
   }):start()
 end
 
--- List PRs awaiting review
-function M.list_prs(callback)
+-- List PRs awaiting review or all PRs
+function M.list_prs(callback, show_all)
   local Job = require("plenary.job")
+  -- Default args for PRs needing my review
+  local args = { "pr", "list", "--json", "number,title,url,headRefName,author", "--search", "review-requested:@me" }
+  -- If show_all is true, list all PRs in the repo
+  if show_all then
+    args = { "pr", "list", "--json", "number,title,url,headRefName,author" }
+  end
 
   Job:new({
     command = M.config.gh_cmd,
-    args = { "pr", "list", "--json", "number,title,url,headRefName,author", "--search", "review-requested:@me" },
+    args = args,
     on_exit = function(j, return_val)
       vim.schedule(function()
         if return_val ~= 0 then

@@ -13,7 +13,7 @@ end
 function M.show_pr_selection(prs, callback)
   if #prs == 0 then
     vim.schedule_wrap(function()
-      vim.notify("No PRs awaiting your review", vim.log.levels.INFO)
+      vim.notify("No PRs found", vim.log.levels.INFO)
     end)()
     return
   end
@@ -43,7 +43,7 @@ function M._show_telescope_selection(prs, callback)
 
   pickers
     .new({}, {
-      prompt_title = "PR Review",
+      prompt_title = #entries == 0 and "No PRs Available" or "Select PR to Review",
       finder = finders.new_table({
         results = entries,
         entry_maker = function(entry)
@@ -96,6 +96,26 @@ function M.prompt_for_review_options(default_prompt, callback)
     default = default_prompt,
   }, function(input)
     callback(input)
+  end)
+end
+
+-- Prompt user to choose between all PRs or just those needing review
+function M.prompt_pr_list_type(callback)
+  vim.ui.select({
+    { text = "PRs assigned to me for review", value = false },
+    { text = "All open PRs in the repository", value = true },
+  }, {
+    prompt = "Select which pull requests to display:",
+    format_item = function(item)
+      return item.text
+    end,
+  }, function(choice)
+    if choice then
+      callback(choice.value)
+    else
+      -- Default to showing PRs assigned for review if user cancels
+      callback(false)
+    end
   end)
 end
 

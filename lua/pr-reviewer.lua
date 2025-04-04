@@ -65,14 +65,17 @@ function M.review_pr(pr_number)
       M.generate_review(pr_data)
     end)
   else
-    github.list_prs(function(prs)
-      ui.show_pr_selection(prs, function(selected_pr)
-        if selected_pr then
-          github.get_pr_details(selected_pr.number, function(pr_data)
-            M.generate_review(pr_data)
-          end)
-        end
-      end)
+    -- Ask user which PRs they want to see
+    ui.prompt_pr_list_type(function(show_all)
+      github.list_prs(function(prs)
+        ui.show_pr_selection(prs, function(selected_pr)
+          if selected_pr then
+            github.get_pr_details(selected_pr.number, function(pr_data)
+              M.generate_review(pr_data)
+            end)
+          end
+        end)
+      end, show_all)
     end)
   end
 end
