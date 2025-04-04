@@ -1,7 +1,7 @@
 .PHONY: test lint
 
 test:
-	nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedFile tests/pr-reviewer/pr-reviewer_spec.lua"
+	nvim --headless -u tests/minimal_init.lua -c "PlenaryBustedDirectory tests"
 
 lint:
 	luacheck lua/

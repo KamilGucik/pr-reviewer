@@ -12,7 +12,9 @@ end
 -- Show PR selection UI
 function M.show_pr_selection(prs, callback)
   if #prs == 0 then
-    vim.notify("No PRs awaiting your review", vim.log.levels.INFO)
+    vim.schedule_wrap(function()
+      vim.notify("No PRs awaiting your review", vim.log.levels.INFO)
+    end)()
     return
   end
 
